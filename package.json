@@ -1,7 +1,7 @@
 {
   "name": "sample-shop-vmo",
   "version": "1.0.0",
-  "main": "web/index.js",
+  "main": "web/backend/app.js",
   "license": "UNLICENSED",
   "scripts": {
     "shopify": "shopify",
