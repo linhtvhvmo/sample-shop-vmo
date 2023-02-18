@@ -1,17 +1,56 @@
+import { DataTable, Spinner, TextContainer } from '@shopify/polaris';
+import { useMemo } from 'react';
+
 export function CustomTable(props) {
-  const { data } = props;
+  const { data, headings, ignoreFields, loading } = props;
 
-  if (!data || data.length === 0) return <>no data</>;
+  const result = useMemo(() => {
+    if (loading)
+      return (
+        <div
+          style={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Spinner size='large' />
+        </div>
+      );
 
-  const headers = Object.keys(data[0]);
+    if (!data || !data.length)
+      return <TextContainer>Error: data is undefined</TextContainer>;
 
-  return (
-    <table>
-      <tr>
-        {headers.map((item) => (
-          <th>{item}</th>
-        ))}
-      </tr>
-    </table>
-  );
+    if (!headings || !headings.length)
+      return <TextContainer> Error: no headings</TextContainer>;
+
+    const headers =
+      ignoreFields && ignoreFields.length
+        ? Object.keys(data[0]).filter(
+            (item) => item !== 'id' && !ignoreFields.includes(item),
+          )
+        : Object.keys(data[0]).filter((item) => item !== 'id');
+
+    const contentTypes = headers.map((item) => 'text');
+
+    const customData = data.map((item) => {
+      return headers.map((head) => {
+        return String(item[head]);
+      });
+    });
+
+    console.log(customData);
+    console.log(contentTypes);
+
+    return (
+      <DataTable
+        stickyHeader
+        columnContentTypes={contentTypes}
+        headings={headings}
+        rows={customData}
+      />
+    );
+  }, [data, headings]);
+  return result;
 }

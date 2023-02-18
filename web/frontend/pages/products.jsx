@@ -1,5 +1,5 @@
 import { TitleBar } from '@shopify/app-bridge-react';
-import { Card, Heading, Layout, Page, TextContainer } from '@shopify/polaris';
+import { Layout, Page } from '@shopify/polaris';
 import { ProductManagement } from '../modules/product/ProductManagement';
 
 export default function ProductPage() {
@@ -8,7 +8,7 @@ export default function ProductPage() {
       <TitleBar
         title='Product'
         primaryAction={{
-          content: 'Primary action',
+          content: 'Create product',
           onAction: () => console.log('Primary action'),
         }}
         secondaryActions={[
@@ -20,12 +20,7 @@ export default function ProductPage() {
       />
       <Layout>
         <Layout.Section>
-          <Card sectioned>
-            <Heading>Products list</Heading>
-            <TextContainer>
-              <ProductManagement />
-            </TextContainer>
-          </Card>
+          <ProductManagement />
         </Layout.Section>
       </Layout>
     </Page>

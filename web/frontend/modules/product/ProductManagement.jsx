@@ -2,41 +2,33 @@ import { Toast } from '@shopify/app-bridge-react';
 import { Card } from '@shopify/polaris';
 import { useState } from 'react';
 import { CustomTable } from '../../components';
-import { useAppQuery, useAuthenticatedFetch } from '../../hooks';
+import { useAppQuery } from '../../hooks';
 
 export const ProductManagement = () => {
   const emptyToastProps = { content: null };
-  const [isLoading, setIsLoading] = useState(true);
   const [toastProps, setToastProps] = useState(emptyToastProps);
-  const fetch = useAuthenticatedFetch();
   const {
     data: productList,
     refetch: refreshTest,
-    isLoading: isLoadingTest,
+    isLoading: isLoading,
     isRefetching: isRefetchingTest,
   } = useAppQuery({
     url: '/api/products/get-products',
     reactQueryOptions: {
       onSuccess: () => {
-        setIsLoading(false);
+        setToastProps({ content: 'Get data successfully!' });
+      },
+      onError: () => {
+        setToastProps({
+          content: 'There was an error get list products',
+          error: true,
+        });
       },
     },
   });
 
-  const handleTest = async () => {
-    setIsLoading(true);
-    const response = await fetch('/api/products/get-products');
-
-    if (response.ok) {
-      setToastProps({ content: 'Get data successfully!' });
-      await refreshTest();
-    } else {
-      setIsLoading(false);
-      setToastProps({
-        content: 'There was an error creating products',
-        error: true,
-      });
-    }
+  const handleGetListProduct = async () => {
+    await refreshTest();
   };
 
   const toastMarkup = toastProps.content && !isRefetchingTest && (
@@ -50,14 +42,19 @@ export const ProductManagement = () => {
         title='Product List'
         sectioned
         primaryFooterAction={{
-          content: 'Product list',
+          content: 'Reload list',
           onAction: () => {
-            handleTest();
+            handleGetListProduct();
           },
           loading: isLoading,
         }}
       >
-        {!isLoadingTest && <CustomTable data={productList.data} />}
+        <CustomTable
+          loading={isRefetchingTest || isLoading}
+          data={productList?.data}
+          headings={['Title', 'Body', 'Vendor', 'Type', 'Published']}
+          ignoreFields={['image']}
+        />
       </Card>
     </>
   );

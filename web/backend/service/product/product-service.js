@@ -6,7 +6,11 @@ export const getProductService = async () => {
   return Promise.all(
     data.map(async (item) => {
       const itemImage = await getImageByProductId(item.id);
-      return { ...item, published: item.published === 1, image: itemImage };
+      return {
+        ...item,
+        published: item.published === 1,
+        image: itemImage.map((thisImage) => thisImage.image),
+      };
     }),
   );
 };
