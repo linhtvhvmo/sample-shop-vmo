@@ -4,9 +4,10 @@ import {
   TextContainer,
   useIndexResourceState,
 } from '@shopify/polaris';
+import { useEffect } from 'react';
 
 export function CustomTable(props) {
-  const { data, headings, ignoreFields, loading } = props;
+  const { data, headings, ignoreFields, loading, setSelected } = props;
 
   if (loading)
     return (
@@ -31,6 +32,12 @@ export function CustomTable(props) {
   const { selectedResources, allResourcesSelected, handleSelectionChange } =
     useIndexResourceState(data);
 
+  useEffect(() => {
+    if (setSelected) {
+      setSelected(selectedResources);
+    }
+  }, [selectedResources]);
+
   const resourceName = {
     singular: 'one_data',
     plural: 'data',
@@ -51,7 +58,7 @@ export function CustomTable(props) {
       position={index}
     >
       {headers.map((head) => (
-        <IndexTable.Cell>{item[head]}</IndexTable.Cell>
+        <IndexTable.Cell>{String(item[head])}</IndexTable.Cell>
       ))}
     </IndexTable.Row>
   ));

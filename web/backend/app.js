@@ -4,10 +4,13 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import serveStatic from 'serve-static';
 import GDPRWebhookHandlers from '../gdpr.js';
-import productCreator from '../product-creator.js';
 import shopify from '../shopify.js';
 import { getProductImageService } from './service/product-image/product-image-service.js';
-import { getProductService } from './service/product/product-service.js';
+import {
+  getOneProduct,
+  getProductService,
+  updateProductById,
+} from './service/product/product-service.js';
 const PORT = parseInt(process.env.BACKEND_PORT || process.env.PORT, 10);
 
 const STATIC_PATH =
@@ -43,48 +46,47 @@ app.get('/api/products/count', async (_req, res) => {
 });
 
 app.get('/api/products/get-products', async (_req, res) => {
-  let status = 200;
-  let error = null;
-  let data = null;
-  try {
-    data = await getProductService();
-    console.log(data);
-  } catch (err) {
-    console.log(err.message);
-    status = 500;
-    error = err.message;
+  const result = await getProductService();
+  res.status(result.status).send(result);
+});
+
+app.get('/api/products/get-product', async (_req, res) => {
+  const field = _req.query.field;
+  const value = _req.query.value;
+  if (!field || !value) {
+    return res.status(400).send({ error: 'Invalid params' });
   }
-  res.status(status).send({ success: status === 200, error, data });
+  const result = await getOneProduct(field, value);
+  res.status(result.status).send(result);
 });
 
 app.get('/api/products/get-product-images', async (_req, res) => {
-  let status = 200;
-  let error = null;
-  let data = null;
-  try {
-    data = await getProductImageService();
-    console.log(data);
-  } catch (err) {
-    console.log(err.message);
-    status = 500;
-    error = err.message;
-  }
-  res.status(status).send({ success: status === 200, error, data });
+  const result = await getProductImageService();
+  res.status(result.status).send(result);
 });
 
-app.get('/api/products/create', async (_req, res) => {
-  let status = 200;
-  let error = null;
-
-  try {
-    await productCreator(res.locals.shopify.session);
-  } catch (e) {
-    console.log(`Failed to process products/create: ${e.message}`);
-    status = 500;
-    error = e.message;
+app.post('/api/products/update', async (_req, res) => {
+  const id = _req.query.id;
+  if (!id) {
+    return res.status(400).send({ error: 'Invalid params' });
   }
-  res.status(status).send({ success: status === 200, error });
+  const result = await updateProductById(_req.body, id);
+  res.status(result.status).send(result);
 });
+
+// app.get('/api/products/create', async (_req, res) => {
+//   let status = 200;
+//   let error = null;
+
+//   try {
+//     await productCreator(res.locals.shopify.session);
+//   } catch (e) {
+//     console.log(`Failed to process products/create: ${e.message}`);
+//     status = 500;
+//     error = e.message;
+//   }
+//   res.status(status).send({ success: status === 200, error });
+// });
 
 app.use(serveStatic(STATIC_PATH, { index: false }));
 

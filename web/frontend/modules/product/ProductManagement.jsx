@@ -1,17 +1,20 @@
-import { Toast } from '@shopify/app-bridge-react';
-import { Card } from '@shopify/polaris';
+import { TitleBar, Toast } from '@shopify/app-bridge-react';
+import { Card, Layout } from '@shopify/polaris';
 import { useState } from 'react';
 import { CustomTable } from '../../components';
 import { useAppQuery } from '../../hooks';
+import { ProductDetail } from './ProductDetail';
 
 export const ProductManagement = () => {
   const emptyToastProps = { content: null };
   const [toastProps, setToastProps] = useState(emptyToastProps);
+  const [detail, setDetail] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState([]);
   const {
     data: productList,
-    refetch: refreshTest,
+    refetch: refetchList,
     isLoading: isLoading,
-    isRefetching: isRefetchingTest,
+    isRefetching: isRefetching,
   } = useAppQuery({
     url: '/api/products/get-products',
     reactQueryOptions: {
@@ -27,35 +30,70 @@ export const ProductManagement = () => {
     },
   });
 
-  const handleGetListProduct = async () => {
-    await refreshTest();
-  };
-
-  const toastMarkup = toastProps.content && !isRefetchingTest && (
+  const toastMarkup = toastProps.content && !isRefetching && (
     <Toast {...toastProps} onDismiss={() => setToastProps(emptyToastProps)} />
   );
 
+  const handleOpenDetail = () => {
+    setDetail(true);
+  };
+
   return (
     <>
-      {toastMarkup}
-      <Card
-        title='Product List'
-        sectioned
-        primaryFooterAction={{
-          content: 'Reload list',
-          onAction: () => {
-            handleGetListProduct();
-          },
-          loading: isLoading,
+      <TitleBar
+        title='Product'
+        primaryAction={{
+          content: 'Create',
+          onAction: () => console.log('Primary action'),
+          loading: isRefetching || isLoading,
         }}
-      >
-        <CustomTable
-          loading={isRefetchingTest || isLoading}
-          data={productList?.data}
-          headings={['Title', 'Body', 'Vendor', 'Type', 'Published']}
-          ignoreFields={['image']}
+        secondaryActions={[
+          {
+            content: 'Delete',
+            onAction: () => console.log('Secondary action'),
+            loading: isRefetching || isLoading,
+            disabled: selectedProduct.length !== 1,
+          },
+          {
+            content: 'Edit',
+            onAction: handleOpenDetail,
+            loading: isRefetching || isLoading,
+            disabled: selectedProduct.length !== 1,
+          },
+        ]}
+      />
+      <Layout>
+        <Layout.Section>
+          <Card
+            title='Product List'
+            sectioned
+            primaryFooterAction={{
+              content: 'Reload list',
+              onAction: () => {
+                refetchList();
+              },
+              loading: isRefetching || isLoading,
+            }}
+          >
+            <CustomTable
+              loading={isRefetching || isLoading}
+              data={productList?.data}
+              headings={['Title', 'Body', 'Vendor', 'Type', 'Published']}
+              ignoreFields={['image']}
+              setSelected={setSelectedProduct}
+            />
+          </Card>
+        </Layout.Section>
+      </Layout>
+      {toastMarkup}
+      {selectedProduct.length === 1 && (
+        <ProductDetail
+          id={selectedProduct[0]}
+          setActive={setDetail}
+          active={detail}
+          setToastProps={setToastProps}
         />
-      </Card>
+      )}
     </>
   );
 };
