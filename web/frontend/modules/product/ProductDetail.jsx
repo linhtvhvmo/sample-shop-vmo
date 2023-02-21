@@ -6,6 +6,7 @@ import { ProductForm } from './ProductForm';
 export const ProductDetail = ({ id, setActive, active, setToastProps }) => {
   const handleChange = useCallback(() => setActive(!active), [active]);
   const [data, setData] = useState();
+  const [loading, setLoading] = useState(false);
   const fetch = useAuthenticatedFetch();
 
   const {
@@ -29,18 +30,21 @@ export const ProductDetail = ({ id, setActive, active, setToastProps }) => {
   });
 
   const handleUpdateProduct = async () => {
+    setLoading(true);
     try {
       await fetch(`/api/products/update?id=${id}`, {
-        method: 'POST',
+        method: 'PUT',
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
       });
       setToastProps({ content: 'Update product successfully' });
     } catch (error) {
       setToastProps({
-        content: 'There was an error get this product',
+        content: 'There was an error update this product',
         error: true,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,6 +63,7 @@ export const ProductDetail = ({ id, setActive, active, setToastProps }) => {
         primaryAction={{
           content: 'Save',
           onAction: handleUpdateProduct,
+          loading,
         }}
         secondaryActions={[
           {

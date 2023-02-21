@@ -25,3 +25,15 @@ export const updateProductWithId = async (body, id) => {
   const data = emptyOrRows(rows);
   return data;
 };
+
+export const createProductRepo = async (body) => {
+  const rows = await executeQuery(
+    `INSERT INTO product (title,bodyHtml,vendor,productType,published) VALUES ('${
+      body.title
+    }','${body.bodyHtml}','${body.vendor}','${body.productType}',${
+      body.published ? 1 : 0
+    })`,
+  );
+  const data = emptyOrRows(rows);
+  return data;
+};

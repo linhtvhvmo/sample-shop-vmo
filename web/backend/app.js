@@ -7,6 +7,7 @@ import GDPRWebhookHandlers from '../gdpr.js';
 import shopify from '../shopify.js';
 import { getProductImageService } from './service/product-image/product-image-service.js';
 import {
+  createProduct,
   getOneProduct,
   getProductService,
   updateProductById,
@@ -65,12 +66,17 @@ app.get('/api/products/get-product-images', async (_req, res) => {
   res.status(result.status).send(result);
 });
 
-app.post('/api/products/update', async (_req, res) => {
+app.put('/api/products/update', async (_req, res) => {
   const id = _req.query.id;
   if (!id) {
     return res.status(400).send({ error: 'Invalid params' });
   }
   const result = await updateProductById(_req.body, id);
+  res.status(result.status).send(result);
+});
+
+app.post('/api/products/create', async (_req, res) => {
+  const result = await createProduct(_req.body);
   res.status(result.status).send(result);
 });
 

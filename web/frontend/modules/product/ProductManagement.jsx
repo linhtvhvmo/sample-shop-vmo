@@ -3,12 +3,14 @@ import { Card, Layout } from '@shopify/polaris';
 import { useState } from 'react';
 import { CustomTable } from '../../components';
 import { useAppQuery } from '../../hooks';
+import { ProductCreate } from './ProductCreate';
 import { ProductDetail } from './ProductDetail';
 
 export const ProductManagement = () => {
   const emptyToastProps = { content: null };
   const [toastProps, setToastProps] = useState(emptyToastProps);
   const [detail, setDetail] = useState(false);
+  const [create, setCreate] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState([]);
   const {
     data: productList,
@@ -38,13 +40,22 @@ export const ProductManagement = () => {
     setDetail(true);
   };
 
+  const handleOpenCreate = () => {
+    setCreate(true);
+  };
+
+  const handleSuccess = async () => {
+    setCreate(false);
+    await refetchList();
+  };
+
   return (
     <>
       <TitleBar
         title='Product'
         primaryAction={{
           content: 'Create',
-          onAction: () => console.log('Primary action'),
+          onAction: handleOpenCreate,
           loading: isRefetching || isLoading,
         }}
         secondaryActions={[
@@ -94,6 +105,12 @@ export const ProductManagement = () => {
           setToastProps={setToastProps}
         />
       )}
+      <ProductCreate
+        setActive={setCreate}
+        active={create}
+        setToastProps={setToastProps}
+        handleSuccess={handleSuccess}
+      />
     </>
   );
 };

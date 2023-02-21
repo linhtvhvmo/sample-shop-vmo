@@ -1,5 +1,6 @@
 import { getImageByProductId } from '../../repository/product-image/product-image-repository.js';
 import {
+  createProductRepo,
   getProduct,
   getProductWithAttribute,
   updateProductWithId,
@@ -51,6 +52,15 @@ export const updateProductById = async (body, id) => {
   }
   try {
     await updateProductWithId(body, id);
+    return { ...sampleData };
+  } catch (error) {
+    return errorFunction(error);
+  }
+};
+
+export const createProduct = async (body) => {
+  try {
+    await createProductRepo(body);
     return { ...sampleData };
   } catch (error) {
     return errorFunction(error);
