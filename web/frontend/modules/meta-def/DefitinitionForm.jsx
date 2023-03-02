@@ -1,14 +1,8 @@
-import {
-  Checkbox,
-  Form,
-  FormLayout,
-  Spinner,
-  TextField,
-} from '@shopify/polaris';
+import { Form, FormLayout, Spinner, TextField } from '@shopify/polaris';
 
 const configField = { autoComplete: 'off' };
 
-export const ProductForm = ({ data, setData, loading }) => {
+export const DefinitionForm = ({ data, setData, loading }) => {
   const handleChange = (e, id) => {
     setData({ ...data, [id]: e });
   };
@@ -42,42 +36,28 @@ export const ProductForm = ({ data, setData, loading }) => {
       </div>
     );
   }
-
   return (
     <Form>
       <FormLayout>
         <TextField
-          id='title'
-          label='Title'
+          id='displayNameKey'
+          label='Display name key'
           {...configField}
-          value={data['title']}
+          value={data['displayNameKey']}
           onChange={handleChange}
         />
         <TextField
-          id='bodyHtml'
-          label='Body '
+          id='id'
+          label='Id'
           {...configField}
-          value={data['bodyHtml']}
+          value={data['id']}
           onChange={handleChange}
         />
         <TextField
-          id='vendor'
-          label='Vendor'
+          id='name'
+          label='Name definition'
           {...configField}
-          value={data['vendor']}
-          onChange={handleChange}
-        />
-        <TextField
-          id='productType'
-          label='Product Type'
-          {...configField}
-          value={data['productType']}
-          onChange={handleChange}
-        />
-        <Checkbox
-          id='published'
-          label='Published'
-          checked={data['published']}
+          value={data['name']}
           onChange={handleChange}
         />
       </FormLayout>

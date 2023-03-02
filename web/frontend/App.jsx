@@ -21,12 +21,8 @@ export default function App() {
             <NavigationMenu
               navigationLinks={[
                 {
-                  label: 'Page name',
-                  destination: '/pagename',
-                },
-                {
-                  label: 'Product',
-                  destination: '/products',
+                  label: 'Metaobject definition list',
+                  destination: '/meta-def-list',
                 },
               ]}
             />

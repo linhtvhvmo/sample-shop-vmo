@@ -7,7 +7,8 @@ import {
 import { useEffect } from 'react';
 
 export function CustomTable(props) {
-  const { data, headings, ignoreFields, loading, setSelected } = props;
+  const { data, headings, ignoreFields, loading, setSelected, isDiscardId } =
+    props;
 
   if (loading)
     return (
@@ -43,12 +44,14 @@ export function CustomTable(props) {
     plural: 'data',
   };
 
-  const headers =
+  let headers =
     ignoreFields && ignoreFields.length
-      ? Object.keys(data[0]).filter(
-          (item) => item !== 'id' && !ignoreFields.includes(item),
-        )
-      : Object.keys(data[0]).filter((item) => item !== 'id');
+      ? Object.keys(data[0]).filter((item) => !ignoreFields.includes(item))
+      : Object.keys(data[0]);
+
+  if (isDiscardId) {
+    headers = headers.filter((item) => item !== 'id');
+  }
 
   const rowMarkup = data.map((item, index) => (
     <IndexTable.Row
