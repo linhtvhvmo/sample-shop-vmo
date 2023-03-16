@@ -67,6 +67,36 @@ export const getListMetaObject = async (type, page, session, host) => {
   return response;
 };
 
+export const getListSchedule = async (page, session, host) => {
+  const type = "schedule";
+  const response = await shopifyGraphQuery(
+    host,
+    session,
+    `{
+            metaobjects(type: "${type}", first: ${page * 10}){
+            edges{
+              node{
+                id
+                displayName
+                fields{
+                  key
+                  value
+                }
+                definition {
+                  displayNameKey
+                  fieldDefinitions{
+                    key
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }`,
+  );
+  return response;
+};
+
 export const getMetaObjectById = async (id, session, host) => {
   const response = await shopifyGraphQuery(
     host,
@@ -83,5 +113,13 @@ export const getMetaObjectById = async (id, session, host) => {
           }
         }`,
   );
+  return response;
+};
+
+export const updateMetaObjectById = async (id, session, host) => {
+  return response;
+};
+
+export const deleteMetaObjectById = async (idArr, session, host) => {
   return response;
 };

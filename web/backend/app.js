@@ -8,7 +8,11 @@ import shopifyApi from '../shopify.js';
 import {
   getListMetaObject,
   getListOfMetaDef,
+  getListSchedule,
   getMetaDefById,
+  getMetaObjectById,
+  updateMetaObjectById,
+  deleteMetaObjectById
 } from './service/meta.object.js';
 
 const PORT = parseInt(process.env.BACKEND_PORT || process.env.PORT, 10);
@@ -95,6 +99,44 @@ app.get('/api/metaobject/get-list', async (_req, res) => {
 app.get('/api/metaobject/get-metaobject', async (_req, res) => {
   const result = await getMetaObjectById(
     _req.query.id,
+    res.locals.shopify.session,
+    _req.headers.host,
+  );
+  res.status(200).send(result);
+});
+
+//Schedule Delivery Routes
+app.get('/api/metaobject/get-schedule', async (_req, res) => {
+  let page = _req.query.page ? _req.query.page : 1;
+  const result = await getListSchedule(
+    page,
+    res.locals.shopify.session,
+    _req.headers.host,
+  );
+  res.status(200).send(result);
+});
+
+app.get('/api/metaobject/get-one-schedule/:id', async (_req, res) => {
+  const result = await getMetaObjectById(
+    _req.query.id,
+    res.locals.shopify.session,
+    _req.headers.host,
+  );
+  res.status(200).send(result);
+});
+
+app.post('/api/metaobject/update-one-schedule/:id', async (_req,res) => {
+  const result = await updateMetaObjectById(
+    _req.query.id,
+    res.locals.shopify.session,
+    _req.headers.host,
+  );
+  res.status(200).send(result);
+});
+
+app.post('/api/metaobject/delete-schedule', async (_req,res) => {
+  const result = await deleteMetaObjectById(
+    _req.body.ids,
     res.locals.shopify.session,
     _req.headers.host,
   );
