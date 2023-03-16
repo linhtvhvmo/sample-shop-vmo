@@ -43,26 +43,26 @@ export const getListMetaObject = async (type, page, session, host) => {
     host,
     session,
     `{
-            metaobjects(type: ${type}, first: ${page * 10}){
-            edges{
-              node{
-                id
-                displayName
-                fields{
-                  key
-                  value
-                }
-                definition {
-                  displayNameKey
-                  fieldDefinitions{
-                    key
-                    name
-                  }
-                }
+      metaobjects(type: "${type}", first: ${page * 10}) {
+        edges {
+          node {
+            id
+            displayName
+            fields {
+              key
+              value
+            }
+            definition {
+              displayNameKey
+              fieldDefinitions {
+                key
+                name
               }
             }
           }
-        }`
+        }
+      }
+    }`
   );
   return response;
 };
@@ -72,16 +72,16 @@ export const getMetaObjectById = async (id, session, host) => {
     host,
     session,
     `{
-              metaobject(id:"${id}"){
-                  id
-              displayName
-              handle
-              fields {
-                key
-                value
-              }
-            }
-          }`
+      metaobject(id: "${id}") {
+        id
+        displayName
+        handle
+        fields {
+          key
+          value
+        }
+      }
+    }`
   );
   return response;
 };
@@ -95,7 +95,6 @@ export const deleteBulk = async (idArr, session, host) => {
           ids: ["${idArr}"],
         }) {
           job {
-            done
             id
           }
         }

@@ -29,25 +29,25 @@ export const createScheduleOrder = async (
     host,
     session,
     `mutation {
-        metaobjectUpdate(
-          type: "${typeList.scheduleOrder}",
-          metaobject: {
-          fields: [
-            { key: "identity", value: "${identity}" },
-            { key: "schedule_id", value: "${scheduleId}" },
-            { key: "order_id", value: "${orderId}" },
-          ],
-        }) {
-          metaobject {
-            id
-            displayName
-            fields {
-              key
-              value
-            }
+      metaobjectCreate(
+        metaobject: {
+        type: "${typeList.scheduleOrder}",
+        fields: [
+          { key: "identity", value: "${identity}" },
+          { key: "schedule_id", value: "${scheduleId}" },
+          { key: "order_id", value: "${orderId}" },
+        ],
+      }) {
+        metaobject {
+          id
+          displayName
+          fields {
+            key
+            value
           }
-        },
-      }`
+        }
+      },
+    }`
   );
   return response;
 };

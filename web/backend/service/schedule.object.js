@@ -34,30 +34,30 @@ export const createSchedule = async (
     host,
     session,
     `mutation {
-        metaobjectUpdate(
-          type: "${typeList.schedule}",
-          metaobject: {
-          fields: [
-            { key: "schedule_date", value: "${scheduleDate}" },
-            { key: "comment", value: "${comment}" },
-            { key: "customer_type", value: "${customerType}" },
-            { key: "maximum_order", value: "${maximumOrder}" },
-            { key: "is_customed", value: "${isCustomed}" },
-            { key: "identity", value: "${identity}" },
-            { key: "area", value: "${area}" },
-            { key: "district", value: "${district}" },
-          ],
-        }) {
-          metaobject {
-            id
-            displayName
-            fields {
-              key
-              value
-            }
+      metaobjectCreate(
+        metaobject: {
+        type: "${typeList.schedule}",
+        fields: [
+          { key: "schedule_date", value: "${scheduleDate}" },
+          { key: "comment", value: "${comment}" },
+          { key: "customer_type", value: "${customerType}" },
+          { key: "maximum_order", value: "${maximumOrder}" },
+          { key: "is_customed", value: "${isCustomed}" },
+          { key: "identity", value: "${identity}" },
+          { key: "area", value: "${area}" },
+          { key: "district", value: "${district}" },
+        ],
+      }) {
+        metaobject {
+          id
+          displayName
+          fields {
+            key
+            value
           }
-        },
-      }`
+        }
+      },
+    }`
   );
   return response;
 };
