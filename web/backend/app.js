@@ -10,9 +10,13 @@ import {
   getListOfMetaDef,
   getListSchedule,
   getMetaDefById,
-  getMetaObjectById,
-  updateMetaObjectById,
-  deleteMetaObjectById
+  getScheduleById,
+  updateScheduleById,
+  deleteScheduleById,
+  getListScheduleOrder,
+  getScheduleOrderById,
+  updateScheduleOrderById,
+  deleteScheduleOrderById
 } from './service/meta.object.js';
 
 const PORT = parseInt(process.env.BACKEND_PORT || process.env.PORT, 10);
@@ -117,7 +121,7 @@ app.get('/api/metaobject/get-schedule', async (_req, res) => {
 });
 
 app.get('/api/metaobject/get-one-schedule/:id', async (_req, res) => {
-  const result = await getMetaObjectById(
+  const result = await getScheduleById(
     _req.query.id,
     res.locals.shopify.session,
     _req.headers.host,
@@ -126,7 +130,7 @@ app.get('/api/metaobject/get-one-schedule/:id', async (_req, res) => {
 });
 
 app.post('/api/metaobject/update-one-schedule/:id', async (_req,res) => {
-  const result = await updateMetaObjectById(
+  const result = await updateScheduleById(
     _req.query.id,
     res.locals.shopify.session,
     _req.headers.host,
@@ -135,7 +139,7 @@ app.post('/api/metaobject/update-one-schedule/:id', async (_req,res) => {
 });
 
 app.post('/api/metaobject/delete-schedule', async (_req,res) => {
-  const result = await deleteMetaObjectById(
+  const result = await deleteScheduleById(
     _req.body.ids,
     res.locals.shopify.session,
     _req.headers.host,
@@ -143,19 +147,43 @@ app.post('/api/metaobject/delete-schedule', async (_req,res) => {
   res.status(200).send(result);
 });
 
-// app.get('/api/products/create', async (_req, res) => {
-//   let status = 200;
-//   let error = null;
+//Schedule Order Routes
+app.get('/api/metaobject/get-schedule-order', async (_req, res) => {
+  let page = _req.query.page ? _req.query.page : 1;
+  const result = await getListScheduleOrder(
+    page,
+    res.locals.shopify.session,
+    _req.headers.host,
+  );
+  res.status(200).send(result);
+});
 
-//   try {
-//     await productCreator(res.locals.shopify.session);
-//   } catch (e) {
-//     console.log(`Failed to process products/create: ${e.message}`);
-//     status = 500;
-//     error = e.message;
-//   }
-//   res.status(status).send({ success: status === 200, error });
-// });
+app.get('/api/metaobject/get-one-schedule-order/:id', async (_req, res) => {
+  const result = await getScheduleOrderById(
+    _req.query.id,
+    res.locals.shopify.session,
+    _req.headers.host,
+  );
+  res.status(200).send(result);
+});
+
+app.post('/api/metaobject/update-one-schedule-order/:id', async (_req,res) => {
+  const result = await updateScheduleOrderById(
+    _req.query.id,
+    res.locals.shopify.session,
+    _req.headers.host,
+  );
+  res.status(200).send(result);
+});
+
+app.post('/api/metaobject/delete-schedule-order', async (_req,res) => {
+  const result = await deleteScheduleOrderById(
+    _req.body.ids,
+    res.locals.shopify.session,
+    _req.headers.host,
+  );
+  res.status(200).send(result);
+});
 
 app.use(serveStatic(STATIC_PATH, { index: false }));
 
