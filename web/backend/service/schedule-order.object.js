@@ -1,5 +1,5 @@
 import shopifyGraphQuery from "../../shopifyGraph.js";
-import * as metaObjectService from "./meta.object";
+import * as metaObjectService from "./meta.object.js";
 import { typeList } from "./constants.js";
 
 //Schedule API
@@ -89,5 +89,69 @@ export const updateScheduleOrderById = async (
 
 export const deleteBulkScheduleOrder = async (idArr, session, host) => {
   const response = await metaObjectService.deleteBulk(idArr, session, host);
+  return response;
+};
+
+export const getScheduleOrderByScheduleId = async (
+  scheduleId,
+  page,
+  session,
+  host
+) => {
+  const response = await shopifyGraphQuery(
+    host,
+    session,
+    `{
+    metaobjects(
+      type: "${typeList.scheduleOrder}", 
+      first: ${page * 10}, 
+      query: "display_name:${scheduleId}"
+    ) {
+      edges {
+        node {
+          id
+          displayName
+          fields {
+            key
+            value
+          }
+        }
+      }
+    }
+  }`
+  );
+  return response;
+};
+
+export const getOrderDataByScheduleOrder = async (
+  scheduleOrderData,
+  page,
+  session,
+  host
+) => {
+  let queryString = "";
+  scheduleOrderData.forEach((element) => {
+    element.node.fields.forEach((element) => {
+      if (element.key === "order_id") {
+        queryString += ` AND name:${element.value}`;
+      }
+    });
+  });
+
+  const response = await shopifyGraphQuery(
+    host,
+    session,
+    `{
+      orders(first:${page * 10}, query:"${queryString.slice(5)}") {
+        edges {
+          node {
+            id
+            name
+          }
+        }
+      }
+    }`
+  );
+
   return response;
 };

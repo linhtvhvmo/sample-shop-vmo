@@ -1,5 +1,6 @@
 import shopifyGraphQuery from "../../shopifyGraph.js";
-import * as metaObjectService from "./meta.object";
+import * as metaObjectService from "./meta.object.js";
+import * as commonService from "./common";
 import { typeList } from "./constants.js";
 
 //Schedule API
@@ -107,7 +108,59 @@ export const updateScheduleById = async (
   return response;
 };
 
+export const updateSchedulePriority = async (id, priority, session, host) => {
+  const response = await shopifyGraphQuery(
+    host,
+    session,
+    `mutation {
+        metaobjectUpdate(
+          id: "${id}",
+          metaobject: {
+          fields: [
+            { key: "priority", value: "${priority}" },
+          ],
+        }) {
+          metaobject {
+            id
+            displayName
+            fields {
+              key
+              value
+            }
+          }
+        },
+      }`
+  );
+  return response;
+};
+
 export const deleteBulkSchedule = async (idArr, session, host) => {
   const response = await metaObjectService.deleteBulk(idArr, session, host);
   return response;
+};
+
+export const getScheduleForCheckout = async (fromDate, toDate, session, host) => {
+  const getScheduleList = await metaObjectService.getListMetaObject(
+    typeList.schedule,
+    9.9,
+    session,
+    host
+  );
+
+  const scheduleDataList = [];
+
+  for (let i = 0; i < getScheduleList.body.data.metaobjects.edges.length; i++) {
+    element = getScheduleList.body.data.metaobjects.edges[i].node;
+    const scheduleDataObj = commonService.parseFieldsToObj(element.fields);
+    scheduleDataObj.id = element.id;
+
+    const checkDateBetween = commonService.checkDateBetween(fromDate, toDate, scheduleDataObj.schedule_date)
+    if (scheduleDataObj.is_customed === "0") {
+      scheduleDataList.push(scheduleDataObj);
+    } else if (scheduleDataObj.is_customed === "1" && checkDateBetween) {
+      scheduleDataList.push(scheduleDataObj);
+    }
+  }
+
+  return scheduleDataList;
 };

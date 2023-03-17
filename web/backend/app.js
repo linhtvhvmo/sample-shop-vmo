@@ -8,11 +8,11 @@ import shopifyApi from "../shopify.js";
 import {
   getListMetaObject,
   getListOfMetaDef,
-  getListSchedule,
   getMetaDefById,
 } from "./service/meta.object.js";
-import * as scheduleService from "./service/schedule.object";
-import * as scheduleOrderService from "./service/schedule-order.object"
+import * as scheduleService from "./service/schedule.object.js";
+import * as scheduleOrderService from "./service/schedule-order.object.js";
+import * as commonService from "./service/common.js";
 
 const PORT = parseInt(process.env.BACKEND_PORT || process.env.PORT, 10);
 
@@ -45,14 +45,14 @@ app.get("/api/products/count", async (_req, res) => {
     session: res.locals.shopify.session,
   });
   console.log(countData);
-  res.status(200).send(countData);
+  return res.status(200).send(countData);
 });
 
 app.get("/api/products/get-product-shopify", async (_req, res) => {
   const result = await shopifyApi.api.rest.Product.all({
     session: res.locals.shopify.session,
   });
-  res.status(200).send(result);
+  return res.status(200).send(result);
 });
 
 app.get("/api/metaobject/get-list-definition", async (_req, res) => {
@@ -67,7 +67,7 @@ app.get("/api/metaobject/get-list-definition", async (_req, res) => {
     res.locals.shopify.session,
     _req.headers.host
   );
-  res.status(200).send(result);
+  return res.status(200).send(result);
 });
 
 app.get("/api/metaobject/get-definition", async (_req, res) => {
@@ -76,7 +76,7 @@ app.get("/api/metaobject/get-definition", async (_req, res) => {
     res.locals.shopify.session,
     _req.headers.host
   );
-  res.status(200).send(result);
+  return res.status(200).send(result);
 });
 
 app.get("/api/metaobject/get-list", async (_req, res) => {
@@ -92,7 +92,7 @@ app.get("/api/metaobject/get-list", async (_req, res) => {
     res.locals.shopify.session,
     _req.headers.host
   );
-  res.status(200).send(result);
+  return res.status(200).send(result);
 });
 
 app.get("/api/metaobject/get-metaobject", async (_req, res) => {
@@ -101,7 +101,7 @@ app.get("/api/metaobject/get-metaobject", async (_req, res) => {
     res.locals.shopify.session,
     _req.headers.host
   );
-  res.status(200).send(result);
+  return res.status(200).send(result);
 });
 
 // SCHEDULE DELIVERY ROUTES
@@ -112,37 +112,91 @@ app.get("/api/metaobject/get-schedule", async (_req, res) => {
     res.locals.shopify.session,
     _req.headers.host
   );
-  res.status(200).send(result);
+  return res.status(200).send(result);
 });
 
 app.get("/api/metaobject/get-one-schedule/:id", async (_req, res) => {
   const result = await scheduleService.getScheduleById(
-    _req.query.id,
+    _req.params.id,
     res.locals.shopify.session,
     _req.headers.host
   );
-  res.status(200).send(result);
+  return res.status(200).send(result);
+});
+
+app.get("/api/metaobject/get-schedule-checkout", async (_req, res) => {
+  const result = await scheduleService.getScheduleForCheckout(
+    _req.query.fromDate,
+    _req.query.toDate,
+    res.locals.shopify.session,
+    _req.headers.host
+  );
+  return res.status(200).send(result);
 });
 
 app.post("/api/metaobject/create-schedule", async (_req, res) => {
+  const identity = await commonService.getUnixTimestamp();
   const result = await scheduleService.createSchedule(
     _req.body.scheduleDate,
     _req.body.comment,
     _req.body.customerType,
     _req.body.maximumOrder,
     _req.body.isCustomed,
-    _req.body.identity,
+    identity,
     _req.body.area,
     _req.body.district,
     res.locals.shopify.session,
     _req.headers.host
   );
-  res.status(200).send(result);
+  return res.status(200).send(result);
 });
 
 app.post("/api/metaobject/update-one-schedule/:id", async (_req, res) => {
+  const schedule = await scheduleService.getScheduleById(
+    _req.params.id,
+    res.locals.shopify.session,
+    _req.headers.host
+  );
+  const scheduleData = await commonService.parseFieldsToObj(
+    schedule.body.data.metaobjects.fields
+  );
+
+  // CHECK ORDER
+  const getScheduleOrder =
+    await scheduleOrderService.getScheduleOrderByScheduleId(
+      _req.params.id,
+      page,
+      res.locals.shopify.session,
+      _req.headers.host
+    );
+  if (getScheduleOrder.body.data.metaobjects.edges.length) {
+    if (_req.body.maximumOrder < scheduleData.maximum_order) {
+      return res
+        .status(200)
+        .send(
+          "Schedule have order and can only update with greater maximum orders"
+        );
+    }
+
+    const result = await scheduleService.updateScheduleById(
+      _req.params.id,
+      scheduleData.schedule_date,
+      scheduleData.comment,
+      scheduleData.customer_type,
+      _req.body.maximumOrder,
+      scheduleData.is_customed,
+      scheduleData.identity,
+      scheduleData.area,
+      scheduleData.district,
+      res.locals.shopify.session,
+      _req.headers.host
+    );
+
+    return res.status(200).send(result);
+  }
+
   const result = await scheduleService.updateScheduleById(
-    _req.query.id,
+    _req.params.id,
     _req.body.scheduleDate,
     _req.body.comment,
     _req.body.customerType,
@@ -154,7 +208,17 @@ app.post("/api/metaobject/update-one-schedule/:id", async (_req, res) => {
     res.locals.shopify.session,
     _req.headers.host
   );
-  res.status(200).send(result);
+  return res.status(200).send(result);
+});
+
+app.post("/api/metaobject/update-one-schedule/:id", async (_req, res) => {
+  const result = await scheduleService.updateSchedulePriority(
+    _req.params.id,
+    _req.body.priority,
+    res.locals.shopify.session,
+    _req.headers.host
+  );
+  return res.status(200).send(result);
 });
 
 app.post("/api/metaobject/delete-schedule", async (_req, res) => {
@@ -163,7 +227,7 @@ app.post("/api/metaobject/delete-schedule", async (_req, res) => {
     res.locals.shopify.session,
     _req.headers.host
   );
-  res.status(200).send(result);
+  return res.status(200).send(result);
 });
 
 // SCHEDULE ORDER ROUTES
@@ -174,39 +238,40 @@ app.get("/api/metaobject/get-schedule-order", async (_req, res) => {
     res.locals.shopify.session,
     _req.headers.host
   );
-  res.status(200).send(result);
+  return res.status(200).send(result);
 });
 
 app.get("/api/metaobject/get-one-schedule-order/:id", async (_req, res) => {
   const result = await scheduleOrderService.getScheduleOrderById(
-    _req.query.id,
+    _req.params.id,
     res.locals.shopify.session,
     _req.headers.host
   );
-  res.status(200).send(result);
+  return res.status(200).send(result);
 });
 
 app.post("/api/metaobject/create-schedule-order", async (_req, res) => {
+  const identity = await commonService.getUnixTimestamp();
   const result = await scheduleOrderService.createScheduleOrder(
-    _req.body.identity,
+    identity,
     _req.body.scheduleId,
     _req.body.orderId,
     res.locals.shopify.session,
     _req.headers.host
   );
-  res.status(200).send(result);
+  return res.status(200).send(result);
 });
 
 app.post("/api/metaobject/update-one-schedule-order/:id", async (_req, res) => {
   const result = await scheduleOrderService.updateScheduleOrderById(
-    _req.query.id,
+    _req.params.id,
     _req.body.identity,
     _req.body.scheduleId,
     _req.body.orderId,
     res.locals.shopify.session,
     _req.headers.host
   );
-  res.status(200).send(result);
+  return res.status(200).send(result);
 });
 
 app.post("/api/metaobject/delete-schedule-order", async (_req, res) => {
@@ -215,7 +280,31 @@ app.post("/api/metaobject/delete-schedule-order", async (_req, res) => {
     res.locals.shopify.session,
     _req.headers.host
   );
-  res.status(200).send(result);
+  return res.status(200).send(result);
+});
+
+app.get("/api/metaobject/get-order-by-schedule/:id", async (_req, res) => {
+  let page = _req.query.page ? _req.query.page : 1;
+
+  const getScheduleOrder =
+    await scheduleOrderService.getScheduleOrderByScheduleId(
+      _req.params.id,
+      page,
+      res.locals.shopify.session,
+      _req.headers.host
+    );
+
+  if (!getScheduleOrder.body.data.metaobjects.edges.length) {
+    return res.status(200).send("This schedule have no orders");
+  }
+
+  const result = await scheduleOrderService.getOrderDataByScheduleOrder(
+    getScheduleOrder.body.data.metaobjects.edges,
+    page,
+    res.locals.shopify.session,
+    _req.headers.host
+  );
+  return res.status(200).send(result);
 });
 
 // START APP
